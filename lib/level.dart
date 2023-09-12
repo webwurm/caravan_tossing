@@ -3,6 +3,7 @@ import 'package:caravan_tossing/caravan_tossing.dart';
 import 'package:flame/components.dart';
 import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
+import 'package:caravan_tossing/background_layer.dart';
 
 class Level extends World with HasGameRef<CaravanTossing> {
   @override
@@ -12,47 +13,39 @@ class Level extends World with HasGameRef<CaravanTossing> {
   }
 
   void _addBackground() async {
-    Parallax parallaxSky = await gameRef.loadParallax(
-      [ParallaxImageData('background/background01.png')],
+    final BackgroundLayer layerBackground = BackgroundLayer(
+      imagePath: 'background/background01.png',
       baseVelocity: Vector2(0, 0),
       repeat: ImageRepeat.repeatX,
       fill: LayerFill.height,
-    );
-
-    ParallaxComponent bgSky = ParallaxComponent(
-      parallax: parallaxSky,
+      alignmentY: 0,
       priority: -10,
+      position: Vector2(0, 0),
     );
-    add(bgSky);
+    final bgBackground = await layerBackground.createComponent(gameRef);
 
-    Parallax parallaxClouds = await gameRef.loadParallax(
-      [ParallaxImageData('background/sky01.png')],
+    final BackgroundLayer layerSky = BackgroundLayer(
+      imagePath: 'background/sky01.png',
       baseVelocity: Vector2(15, 0),
       repeat: ImageRepeat.repeatX,
       fill: LayerFill.height,
-      alignment: Alignment.topCenter,
-    );
-
-    ParallaxComponent bgClouds = ParallaxComponent(
-      parallax: parallaxClouds,
+      alignmentY: 0,
       priority: -5,
+      position: Vector2(0, 0),
     );
-    add(bgClouds);
+    final bgSky = await layerSky.createComponent(gameRef);
 
-    Parallax parallaxTrees = await gameRef.loadParallax(
-      [ParallaxImageData('background/treeline01.png')],
+    final BackgroundLayer layerTrees = BackgroundLayer(
+      imagePath: 'background/treeline01.png',
       baseVelocity: Vector2(25, 0),
       repeat: ImageRepeat.repeatX,
-      fill: LayerFill.none,
-      alignment: Alignment.topCenter,
-    );
-
-    ParallaxComponent bgTrees = ParallaxComponent(
-      parallax: parallaxTrees,
+      fill: LayerFill.width,
+      alignmentY: gameRef.size.y,
       priority: 0,
-      // I don't understand why this puts it on the bottom, but it does
       position: Vector2(0, gameRef.size.y / 2 + 20),
     );
-    add(bgTrees);
+    final bgTrees = await layerTrees.createComponent(gameRef);
+
+    addAll([bgBackground, bgSky, bgTrees]);
   }
 }
