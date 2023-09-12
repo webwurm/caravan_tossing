@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:caravan_tossing/caravan_tossing.dart';
+import 'package:caravan_tossing/player.dart';
 import 'package:flame/components.dart';
 import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,8 @@ class Level extends World with HasGameRef<CaravanTossing> {
   @override
   FutureOr<void> onLoad() {
     _addBackground();
+    _addPlayer();
+
     return super.onLoad();
   }
 
@@ -54,5 +57,11 @@ class Level extends World with HasGameRef<CaravanTossing> {
       position: Vector2(0, gameRef.size.y / 2 + 20),
     );
     add(bgTrees);
+  }
+
+  void _addPlayer() async {
+    Player player = Player(
+        sprite: Sprite(gameRef.images.fromCache('player/caravan01.png')));
+    add(player);
   }
 }

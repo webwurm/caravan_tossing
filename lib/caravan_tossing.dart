@@ -7,7 +7,9 @@ import 'package:flame/game.dart';
 
 class CaravanTossing extends FlameGame {
   // Hintergrundfarbe setzen
-  Color backgroundColor() => Color.fromARGB(255, 166, 128, 247);
+  @override
+  Color backgroundColor() => const Color.fromARGB(255, 166, 128, 247);
+  bool gameStopped = false;
 
   late CameraComponent cam;
   Level world = Level();
