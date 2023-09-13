@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 class Level extends World with HasGameRef<CaravanTossing> {
   late Player player;
   late SpriteAnimationComponent crow;
+  late ParallaxComponent background;
   Random random = Random();
 
   @override
@@ -26,19 +27,6 @@ class Level extends World with HasGameRef<CaravanTossing> {
   }
 
   void _addBackground() async {
-    ParallaxComponent background = await gameRef.loadParallaxComponent(
-      [
-        ParallaxImageData('background/background01.png'),
-        ParallaxImageData('background/sky01.png'),
-        ParallaxImageData('background/treeline01.png')
-      ],
-      baseVelocity: Vector2(0.1, 0),
-      velocityMultiplierDelta: Vector2(10, 0),
-      repeat: ImageRepeat.repeatX,
-      fill: LayerFill.height,
-    );
-    add(background);
-
     // Crow
     final crowAnimation = await gameRef.loadSpriteAnimation(
         'background/crow 350x400 4x3.png',
