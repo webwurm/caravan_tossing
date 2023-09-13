@@ -1,21 +1,38 @@
-import 'dart:async';
-
 import 'package:caravan_tossing/caravan_tossing.dart';
 import 'package:flame/components.dart';
 
 class Player extends SpriteComponent with HasGameRef<CaravanTossing> {
-  Player({required this.sprite}) : super();
+  final String name;
+  final bool isRotating;
+  static Vector2 spriteSize = Vector2(150, 85);
+  Player({
+    required this.name,
+    this.isRotating = false,
+  }) : super(size: spriteSize);
 
-  final Sprite sprite;
+  final double minAngle = 0.00;
+  final double maxAngle = -0.95; // Van moves from 0 to minus
+  final double rotateSpeed = 0.8;
+  double direction = -1;
 
   @override
-  FutureOr<void> onLoad() {
-    final SpriteComponent player = SpriteComponent(
-      sprite: sprite,
-      position: Vector2(100, gameRef.size.y - 250),
-      size: Vector2(150, 80),
-    );
-    add(player);
-    return super.onLoad();
+  Future<void> onLoad() async {
+    sprite = await Sprite.load('player/caravan01.png');
+    anchor = Anchor.center;
+    priority = 15;
+  }
+
+  @override
+  void update(double dt) {
+    _rotateTheVan(dt);
+  }
+
+  void _rotateTheVan(double dt) {
+    if (isRotating) {
+      angle += (rotateSpeed * dt) * direction;
+      if (angle < maxAngle || angle > minAngle) {
+        direction *= -1;
+      }
+    }
   }
 }

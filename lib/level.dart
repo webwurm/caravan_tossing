@@ -6,6 +6,8 @@ import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
 
 class Level extends World with HasGameRef<CaravanTossing> {
+  late Player player;
+
   @override
   FutureOr<void> onLoad() {
     _addBackground();
@@ -60,8 +62,16 @@ class Level extends World with HasGameRef<CaravanTossing> {
   }
 
   void _addPlayer() async {
-    Player player = Player(
-        sprite: Sprite(gameRef.images.fromCache('player/caravan01.png')));
+    player = Player(
+      name: 'Player1',
+      isRotating: true,
+    );
+    player.position = Vector2(200, gameRef.size.y - 250);
     add(player);
+  }
+
+  @override
+  void update(double dt) {
+    super.update(dt);
   }
 }
