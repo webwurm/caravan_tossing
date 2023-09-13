@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:caravan_tossing/caravan_tossing.dart';
 import 'package:caravan_tossing/player.dart';
 import 'package:flame/components.dart';
@@ -7,6 +8,8 @@ import 'package:flutter/material.dart';
 
 class Level extends World with HasGameRef<CaravanTossing> {
   late Player player;
+  late SpriteAnimationComponent crow;
+  Random random = Random();
 
   @override
   FutureOr<void> onLoad() {
@@ -16,62 +19,52 @@ class Level extends World with HasGameRef<CaravanTossing> {
     return super.onLoad();
   }
 
+  @override
+  void update(double dt) {
+    crow.position.x += 2;
+    crow.position.y += (random.nextDouble() - 0.5) * 2;
+  }
+
   void _addBackground() async {
-    Parallax parallaxSky = await gameRef.loadParallax(
-      [ParallaxImageData('background/background01.png')],
-      baseVelocity: Vector2(0, 0),
+    ParallaxComponent background = await gameRef.loadParallaxComponent(
+      [
+        ParallaxImageData('background/background01.png'),
+        ParallaxImageData('background/sky01.png'),
+        ParallaxImageData('background/treeline01.png')
+      ],
+      baseVelocity: Vector2(0.1, 0),
+      velocityMultiplierDelta: Vector2(10, 0),
       repeat: ImageRepeat.repeatX,
       fill: LayerFill.height,
     );
+    add(background);
 
-    ParallaxComponent bgSky = ParallaxComponent(
-      parallax: parallaxSky,
-      priority: -10,
-    );
-    add(bgSky);
+    // Crow
+    final crowAnimation = await gameRef.loadSpriteAnimation(
+        'background/crow 350x400 4x3.png',
+        SpriteAnimationData.sequenced(
+          amount: 12,
+          stepTime: 0.1,
+          textureSize: Vector2(350, 400),
+          amountPerRow: 4,
+        ));
 
-    Parallax parallaxClouds = await gameRef.loadParallax(
-      [ParallaxImageData('background/sky01.png')],
-      baseVelocity: Vector2(15, 0),
-      repeat: ImageRepeat.repeatX,
-      fill: LayerFill.height,
-      alignment: Alignment.topCenter,
-    );
-
-    ParallaxComponent bgClouds = ParallaxComponent(
-      parallax: parallaxClouds,
-      priority: -5,
-    );
-    add(bgClouds);
-
-    Parallax parallaxTrees = await gameRef.loadParallax(
-      [ParallaxImageData('background/treeline01.png')],
-      baseVelocity: Vector2(25, 0),
-      repeat: ImageRepeat.repeatX,
-      fill: LayerFill.none,
-      alignment: Alignment.topCenter,
+    crow = SpriteAnimationComponent(
+      animation: crowAnimation,
+      priority: 11,
+      scale: Vector2.all(0.15),
+      position: Vector2(-20, 70),
+      anchor: Anchor.center,
     );
 
-    ParallaxComponent bgTrees = ParallaxComponent(
-      parallax: parallaxTrees,
-      priority: 0,
-      // I don't understand why this puts it on the bottom, but it does
-      position: Vector2(0, gameRef.size.y / 2 + 20),
-    );
-    add(bgTrees);
+    add(crow);
   }
 
   void _addPlayer() async {
     player = Player(
       name: 'Player1',
-      isRotating: true,
     );
     player.position = Vector2(200, gameRef.size.y - 250);
     add(player);
-  }
-
-  @override
-  void update(double dt) {
-    super.update(dt);
   }
 }
