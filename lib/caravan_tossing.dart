@@ -3,9 +3,10 @@ import 'dart:ui';
 
 import 'package:caravan_tossing/level.dart';
 import 'package:flame/components.dart';
+import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 
-class CaravanTossing extends FlameGame {
+class CaravanTossing extends FlameGame with HasKeyboardHandlerComponents {
   // Hintergrundfarbe setzen
   @override
   Color backgroundColor() => const Color.fromARGB(255, 166, 128, 247);
