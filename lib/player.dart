@@ -14,9 +14,15 @@ class Player extends SpriteComponent
 
   bool canRotate = true;
   bool isShooting = false;
+  bool hasLanded = false;
   final double minAngle = 0.00;
   final double maxAngle = -0.95; // Van moves from 0 to minus
   final double rotateSpeed = 0.8;
+  final double pushForce = 70;
+  final double gravity = 0.05;
+  final double airDensity = 0.015;
+  int bottomY = 320;
+  Vector2 velocity = Vector2(0, 0);
   int direction = 0;
 
   @override
@@ -61,6 +67,7 @@ class Player extends SpriteComponent
         direction = 0;
         isShooting = true;
         canRotate = false;
+        velocity = _calculateTossVelocity(angle, pushForce);
       } else {
         direction = 0;
       }
@@ -69,7 +76,14 @@ class Player extends SpriteComponent
   }
 
   void _shootTheVan(double dt) {
-    position += _calculateTossVelocity(angle, 10);
+    if (!hasLanded) {
+      position.y += velocity.y;
+      velocity += _calculateTossVelocity(angle, 0);
+      velocity *= (1 - airDensity);
+      velocity.y += gravity;
+      //angle = _calculateTossAngle(velocity);
+      _checkBoundaries();
+    }
   }
 
   // Calculate the velocity vector
@@ -84,5 +98,30 @@ class Player extends SpriteComponent
 
     // Create and return the velocity vector
     return Vector2(velocityX, velocityY);
+  }
+
+  double _calculateTossAngle(Vector2 forceVector) {
+    // Calculate the magnitude of the force vector
+    double magnitude = forceVector.length;
+
+    // Calculate the angle using atan2 function
+    double angleRadians = atan2(-forceVector.y, forceVector.x);
+
+    // Convert the angle to rotation angle
+    double rotationAngleRadians = 4 * pi / 2.0 - angleRadians;
+
+    return rotationAngleRadians;
+  }
+
+  _checkBoundaries() {
+    if (position.y > bottomY) {
+      print('Wir drehen um: $velocity');
+      velocity.y = velocity.y * -1;
+      if ((velocity.x <= 1) && (velocity.y <= 8) && (position.y > bottomY)) {
+        hasLanded = true;
+        velocity = Vector2.zero();
+        print('off');
+      }
+    }
   }
 }

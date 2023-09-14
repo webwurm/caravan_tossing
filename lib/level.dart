@@ -10,6 +10,7 @@ class Level extends World with HasGameRef<CaravanTossing> {
   late Player player;
   late SpriteAnimationComponent crow;
   late ParallaxComponent background;
+  double bgSpeed = 0;
   Random random = Random();
 
   @override
@@ -24,9 +25,24 @@ class Level extends World with HasGameRef<CaravanTossing> {
   void update(double dt) {
     crow.position.x += 2;
     crow.position.y += (random.nextDouble() - 0.5) * 2;
+    bgSpeed = player.velocity.x * 0.1;
+    background.parallax?.baseVelocity = Vector2(bgSpeed, 0);
   }
 
   void _addBackground() async {
+    background = await gameRef.loadParallaxComponent(
+      [
+        ParallaxImageData('background/background01.png'),
+        ParallaxImageData('background/sky01.png'),
+        ParallaxImageData('background/treeline01.png')
+      ],
+      baseVelocity: Vector2(bgSpeed, 0),
+      velocityMultiplierDelta: Vector2(10, 0),
+      repeat: ImageRepeat.repeatX,
+      fill: LayerFill.height,
+    );
+    add(background);
+
     // Crow
     final crowAnimation = await gameRef.loadSpriteAnimation(
         'background/crow 350x400 4x3.png',
