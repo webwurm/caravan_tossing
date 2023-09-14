@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:caravan_tossing/caravan_tossing.dart';
 import 'package:caravan_tossing/utils.dart';
 import 'package:flame/components.dart';

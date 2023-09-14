@@ -16,7 +16,7 @@ Vector2 calculateTossVelocity(double rotationAngleRadians, double force) {
 
 double calculateTossAngle(Vector2 forceVector) {
   // Calculate the magnitude of the force vector
-  double magnitude = forceVector.length;
+  //double magnitude = forceVector.length;
 
   // Calculate the angle using atan2 function
   double angleRadians = atan2(-forceVector.y, forceVector.x);
