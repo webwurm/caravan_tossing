@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:caravan_tossing/caravan_tossing.dart';
 import 'package:caravan_tossing/player.dart';
+import 'package:caravan_tossing/statusline.dart';
 import 'package:flame/components.dart';
 import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
@@ -12,11 +13,16 @@ class Level extends World with HasGameRef<CaravanTossing> {
   late ParallaxComponent background;
   double bgSpeed = 0;
   Random random = Random();
+  String statusBarText = 'Drücke rauf, runter und dann die Leertaste!';
+  late Statusline statusLine;
 
   @override
   FutureOr<void> onLoad() {
     _addBackground();
     _addPlayer();
+
+    statusLine = Statusline(text: statusBarText);
+    add(statusLine);
 
     return super.onLoad();
   }
