@@ -1,5 +1,9 @@
 import 'package:caravan_tossing/caravan_tossing.dart';
+import 'package:caravan_tossing/collision_block.dart';
+import 'package:caravan_tossing/custom_hitbox.dart';
+import 'package:caravan_tossing/force_bar.dart';
 import 'package:caravan_tossing/utils.dart';
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/services.dart';
 
@@ -17,21 +21,37 @@ class Player extends SpriteComponent
   final double minAngle = 0.00;
   final double maxAngle = -0.95; // Van moves from 0 to minus
   final double rotateSpeed = 0.8;
-  final double pushForce = 70;
+  double pushForce = 0;
   final double bounceForce = 1.1;
-  final double gravity = 0.9;
+  final double gravity = 0.7;
   final double airDensity = 0.99;
-  double bottomY = 320;
   Vector2 velocity = Vector2.zero();
   int direction = 0;
   double distanceVan = 0;
   int distanceVanSum = 0;
+  List<CollisionBlock> collisionBlocks = [];
+  CustomHitbox hitbox = CustomHitbox(
+    offsetX: 10,
+    offsetY: 10,
+    width: 135,
+    height: 70,
+  );
+  late ForceBar forceBar;
 
   @override
   Future<void> onLoad() async {
     sprite = await Sprite.load('player/caravan01.png');
     anchor = Anchor.center;
     priority = 15;
+    debugMode = true;
+
+    add(RectangleHitbox(
+      position: Vector2(hitbox.offsetX, hitbox.offsetY),
+      size: Vector2(hitbox.width, hitbox.height),
+    ));
+
+    forceBar = ForceBar();
+    add(forceBar);
   }
 
   @override
@@ -47,24 +67,18 @@ class Player extends SpriteComponent
       gameRef.world.statusLine.text = 'Meter: $distanceVanSum';
       angle += 0.01;
 
-      // bounce...
-      if (position.y >= bottomY) {
-        print('jump $velocity | $position');
-        // ...except when too slow
-        if ((velocity.x < 1) && (velocity.y < 15)) {
-          isFlying = false;
-          velocity = Vector2.zero();
-        } else {
-          velocity.y *= -1;
-          angle += 0.5;
-        }
-      }
+      _checkCollision();
     }
   }
 
   void _shootTheVan() {
     isFlying = true;
     canRotate = false;
+
+    pushForce = forceBar.force;
+    forceBar.velocity = 0;
+    remove(forceBar);
+
     velocity = calculateTossVelocity(angle, pushForce);
   }
 
@@ -97,5 +111,22 @@ class Player extends SpriteComponent
       }
     }
     return super.onKeyEvent(event, keysPressed);
+  }
+
+  void _checkCollision() {
+    for (final block in collisionBlocks) {
+      if (checkCollision(this, block)) {
+        // if too slow, it's over...
+        if ((velocity.x < 1) && (velocity.y < 15)) {
+          isFlying = false;
+          velocity = Vector2.zero();
+          gameRef.overlays.add('GameOver');
+        } else {
+          // ...otherwise, bounce
+          velocity.y *= -1;
+          angle += 0.5;
+        }
+      }
+    }
   }
 }

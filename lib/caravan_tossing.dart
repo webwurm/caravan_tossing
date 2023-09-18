@@ -20,14 +20,14 @@ class CaravanTossing extends FlameGame with HasKeyboardHandlerComponents {
     // Bilder in Cache
     await images.loadAllImages();
 
-    cam = CameraComponent.withFixedResolution(
-      world: world,
-      width: 640,
-      height: 360,
-    )..viewfinder.anchor = Anchor.topLeft;
+    cam = CameraComponent(world: world)..viewfinder.anchor = Anchor.topLeft;
 
     addAll([cam, world]);
 
     return super.onLoad();
+  }
+
+  void reset() {
+    world.reset();
   }
 }

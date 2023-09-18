@@ -1,0 +1,57 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "level_01.tmx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "Terrain/Terrain (16x16).tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "Terrain/level_01.tmx": {
+            "scale": 0.75,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 379.33333333333326,
+                "y": 157.99999999999994
+            }
+        },
+        "Terrain/level_01.tmx#Terrain (16x16)": {
+            "scaleInDock": 1
+        },
+        "level_01.tmx": {
+            "scale": 1.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 142.99999999999997,
+                "y": 217.66666666666663
+            }
+        },
+        "level_01.tmx#Terrain (16x16)": {
+            "scaleInDock": 1
+        }
+    },
+    "last.imagePath": "C:/Users/manue/Documents/Visual Studio Code/caravan_tossing/assets/tiled/Terrain",
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 16,
+    "map.tileWidth": 16,
+    "map.width": 100,
+    "openFiles": [
+        "level_01.tmx"
+    ],
+    "project": "caravan_tossing.tiled-project",
+    "recentFiles": [
+        "level_01.tmx",
+        "Terrain/level_01.tmx",
+        "Terrain/Terrain (16x16).tsx"
+    ],
+    "tileset.embedInMap": true,
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}
