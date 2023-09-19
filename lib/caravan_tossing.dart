@@ -6,7 +6,8 @@ import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 
-class CaravanTossing extends FlameGame with HasKeyboardHandlerComponents {
+class CaravanTossing extends FlameGame
+    with HasKeyboardHandlerComponents, HasCollisionDetection {
   // Hintergrundfarbe setzen
   @override
   Color backgroundColor() => const Color.fromARGB(255, 166, 128, 247);
