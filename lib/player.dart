@@ -54,6 +54,7 @@ class Player extends SpriteComponent
 
     if (isFlying) {
       position += Vector2(0, velocity.y) * 0.5;
+      //game.cam.viewport.position.x -= velocity.x;
       velocity += Vector2(0, gravity);
       velocity *= airDensity;
       distanceVan += (velocity.x) / 100;
@@ -69,6 +70,29 @@ class Player extends SpriteComponent
   void onCollisionStart(
       Set<Vector2> intersectionPoints, PositionComponent other) {
     (other is ExplosiveBarrel) ? print('Faß!') : print('Boden');
+    print(velocity);
+
+    for (final block in collisionBlocks) {
+      if (checkCollision(this, block)) {
+        // if too slow, it's over...
+        if ((velocity.x < 1) && (velocity.y < 15)) {
+          isFlying = false;
+          velocity = Vector2.zero();
+          gameRef.overlays.add('GameOver');
+        } else {
+          // ...otherwise, bounce
+          if (other is ExplosiveBarrel) {
+            velocity.y = (velocity.y * -1);
+            velocity.x = velocity.x * 5 > 10 ? velocity.x * 5 : velocity.x = 5;
+          } else {
+            // Boden
+            velocity.y *= -1;
+          }
+          angle += 0.5;
+        }
+      }
+    }
+
     super.onCollisionStart(intersectionPoints, other);
   }
 
@@ -84,23 +108,6 @@ class Player extends SpriteComponent
       if (((direction > 0) && (angle < minAngle)) ||
           ((direction < 0) && (angle > maxAngle))) {
         angle += (rotateSpeed * dt) * direction;
-      }
-    }
-  }
-
-  void _checkCollision() {
-    for (final block in collisionBlocks) {
-      if (checkCollision(this, block)) {
-        // if too slow, it's over...
-        if ((velocity.x < 1) && (velocity.y < 15)) {
-          isFlying = false;
-          velocity = Vector2.zero();
-          gameRef.overlays.add('GameOver');
-        } else {
-          // ...otherwise, bounce
-          velocity.y *= -1;
-          angle += 0.5;
-        }
       }
     }
   }
