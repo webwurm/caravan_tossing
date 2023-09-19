@@ -109,13 +109,6 @@ class Level extends World
     super.onGameResize(size);
   }
 
-  @override
-  void onCollisionStart(
-      Set<Vector2> intersectionPoints, PositionComponent other) {
-    print('Collision in level');
-    super.onCollisionStart(intersectionPoints, other);
-  }
-
 // --- PUBLIC
 
   void reset() {

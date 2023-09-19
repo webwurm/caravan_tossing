@@ -68,7 +68,7 @@ class Player extends SpriteComponent
   @override
   void onCollisionStart(
       Set<Vector2> intersectionPoints, PositionComponent other) {
-    print('Collision');
+    print('Collision in player');
     super.onCollisionStart(intersectionPoints, other);
   }
 
