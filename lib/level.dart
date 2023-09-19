@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:caravan_tossing/caravan_tossing.dart';
 import 'package:caravan_tossing/collision_block.dart';
+import 'package:caravan_tossing/explosive_barrel.dart';
 import 'package:caravan_tossing/force_bar.dart';
 import 'package:caravan_tossing/player.dart';
 import 'package:caravan_tossing/statusline.dart';
@@ -176,16 +177,6 @@ class Level extends World
     if (collisionLayer != null) {
       for (final collision in collisionLayer.objects) {
         switch (collision.class_) {
-          case 'explosives':
-            final block = CollisionBlock(
-              position: Vector2(collision.x, collision.y + tilesOffsetY),
-              size: Vector2(collision.width, collision.height),
-            );
-            collisionBlocks.add(block);
-            debugMode = true;
-            block.priority = 11;
-            add(block);
-            break;
           case 'background':
             final block = CollisionBlock(
               position: Vector2(collision.x, collision.y + tilesOffsetY),
@@ -208,14 +199,12 @@ class Level extends World
       for (final item in itemLayer.objects) {
         switch (item.class_) {
           case 'explosives':
-            final itemBlock = SpriteComponent.fromImage(
-              game.images.fromCache('items/explosive_barrel01.png'),
+            final explosiveBarrel = ExplosiveBarrel(
               size: Vector2(item.width, item.height),
               position: Vector2(item.x, item.y + tilesOffsetY),
-              priority: 40,
             );
-            itemBlocks.add(itemBlock);
-            add(itemBlock);
+            itemBlocks.add(explosiveBarrel);
+            add(explosiveBarrel);
             break;
           default:
         }

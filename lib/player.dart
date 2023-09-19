@@ -1,6 +1,7 @@
 import 'package:caravan_tossing/caravan_tossing.dart';
 import 'package:caravan_tossing/collision_block.dart';
 import 'package:caravan_tossing/custom_hitbox.dart';
+import 'package:caravan_tossing/explosive_barrel.dart';
 import 'package:caravan_tossing/utils.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
@@ -40,7 +41,6 @@ class Player extends SpriteComponent
     anchor = Anchor.center;
     priority = 15;
     debugMode = true;
-    print(collisionBlocks.length);
 
     add(RectangleHitbox(
       position: Vector2(hitbox.offsetX, hitbox.offsetY),
@@ -68,7 +68,7 @@ class Player extends SpriteComponent
   @override
   void onCollisionStart(
       Set<Vector2> intersectionPoints, PositionComponent other) {
-    print('Collision in player');
+    (other is ExplosiveBarrel) ? print('Faß!') : print('Boden');
     super.onCollisionStart(intersectionPoints, other);
   }
 
