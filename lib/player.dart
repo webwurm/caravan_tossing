@@ -1,14 +1,12 @@
 import 'package:caravan_tossing/caravan_tossing.dart';
 import 'package:caravan_tossing/collision_block.dart';
 import 'package:caravan_tossing/custom_hitbox.dart';
-import 'package:caravan_tossing/force_bar.dart';
 import 'package:caravan_tossing/utils.dart';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
-import 'package:flutter/services.dart';
 
 class Player extends SpriteComponent
-    with HasGameRef<CaravanTossing>, KeyboardHandler {
+    with HasGameRef<CaravanTossing>, CollisionCallbacks {
   final String name;
   static Vector2 spriteSize = Vector2(150, 85);
   Player({
@@ -21,7 +19,6 @@ class Player extends SpriteComponent
   final double minAngle = 0.00;
   final double maxAngle = -0.95; // Van moves from 0 to minus
   final double rotateSpeed = 0.8;
-  double pushForce = 0;
   final double bounceForce = 1.1;
   final double gravity = 0.7;
   final double airDensity = 0.99;
@@ -36,7 +33,6 @@ class Player extends SpriteComponent
     width: 135,
     height: 70,
   );
-  late ForceBar forceBar;
 
   @override
   Future<void> onLoad() async {
@@ -44,14 +40,12 @@ class Player extends SpriteComponent
     anchor = Anchor.center;
     priority = 15;
     debugMode = true;
+    print(collisionBlocks.length);
 
     add(RectangleHitbox(
       position: Vector2(hitbox.offsetX, hitbox.offsetY),
       size: Vector2(hitbox.width, hitbox.height),
     ));
-
-    forceBar = ForceBar();
-    add(forceBar);
   }
 
   @override
@@ -67,19 +61,22 @@ class Player extends SpriteComponent
       gameRef.world.statusLine.text = 'Meter: $distanceVanSum';
       angle += 0.01;
 
-      _checkCollision();
+      //_checkCollision();
     }
   }
 
-  void _shootTheVan() {
+  @override
+  void onCollisionStart(
+      Set<Vector2> intersectionPoints, PositionComponent other) {
+    print('Collision');
+    super.onCollisionStart(intersectionPoints, other);
+  }
+
+  void shootTheVan(double force) {
     isFlying = true;
     canRotate = false;
 
-    pushForce = forceBar.force;
-    forceBar.velocity = 0;
-    remove(forceBar);
-
-    velocity = calculateTossVelocity(angle, pushForce);
+    velocity = calculateTossVelocity(angle, force);
   }
 
   void _rotateTheVan(double dt) {
@@ -89,28 +86,6 @@ class Player extends SpriteComponent
         angle += (rotateSpeed * dt) * direction;
       }
     }
-  }
-
-  @override
-  bool onKeyEvent(RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
-    final isUpKeyPressed = keysPressed.contains(LogicalKeyboardKey.keyW) ||
-        keysPressed.contains(LogicalKeyboardKey.arrowUp);
-    final isDownKeyPressed = keysPressed.contains(LogicalKeyboardKey.keyS) ||
-        keysPressed.contains(LogicalKeyboardKey.arrowDown);
-    final isSpaceKeyPressed = keysPressed.contains(LogicalKeyboardKey.space);
-
-    if (canRotate) {
-      if (isUpKeyPressed) {
-        direction = -1; // Set direction to -1 for 'W' key
-      } else if (isDownKeyPressed) {
-        direction = 1; // Set direction to 1 for 'S' key
-      } else if (isSpaceKeyPressed) {
-        _shootTheVan();
-      } else {
-        direction = 0;
-      }
-    }
-    return super.onKeyEvent(event, keysPressed);
   }
 
   void _checkCollision() {

@@ -26,6 +26,7 @@ flutter:
     - assets/images/
     - assets/images/background/
     - assets/images/player/
+    - assets/images/items/
     - assets/images/Terrain/
     - assets/tiles/
     - assets/audio/

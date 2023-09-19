@@ -5,12 +5,15 @@ import 'package:caravan_tossing/collision_block.dart';
 import 'package:caravan_tossing/force_bar.dart';
 import 'package:caravan_tossing/player.dart';
 import 'package:caravan_tossing/statusline.dart';
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flame/parallax.dart';
 import 'package:flutter/material.dart';
 import 'package:flame_tiled/flame_tiled.dart';
+import 'package:flutter/services.dart';
 
-class Level extends World with HasGameRef<CaravanTossing> {
+class Level extends World
+    with HasGameRef<CaravanTossing>, KeyboardHandler, CollisionCallbacks {
   late Player player;
   late SpriteAnimationComponent crow;
   late ParallaxComponent background;
@@ -22,28 +25,38 @@ class Level extends World with HasGameRef<CaravanTossing> {
 
   late TiledComponent levelTiles;
   List<CollisionBlock> collisionBlocks = [];
+  List<SpriteComponent> itemBlocks = [];
   late double tilesOffsetY;
+  late ForceBar forceBar;
+
+// --- OVERRIDES
 
   @override
   FutureOr<void> onLoad() async {
     debugMode = true;
+
     levelTiles = await TiledComponent.load(
       'level_01.tmx',
       Vector2.all(16),
     );
     levelTiles.priority = 10;
     tilesOffsetY = gameRef.size.y - levelTiles.size.y;
-    levelTiles.position.y = tilesOffsetY;
+    // levelTiles.position.y = tilesOffsetY;
     add(levelTiles);
 
-    initPlayerPos = Vector2(120, gameRef.size.y - 150);
+    initPlayerPos = Vector2(120, gameRef.size.y - 170);
 
     _addBackground();
     _addPlayer();
     _addCollisions();
+    _addItems();
 
     statusLine = Statusline(text: statusBarText);
     add(statusLine);
+
+    forceBar = ForceBar();
+    //forceBar.enable();
+    add(forceBar);
 
     return super.onLoad();
   }
@@ -54,15 +67,71 @@ class Level extends World with HasGameRef<CaravanTossing> {
     crow.position.y += (random.nextDouble() - 0.5) * 2;
     bgSpeed = player.velocity.x * 0.1;
     levelTiles.position.x -= player.velocity.x * 0.3;
+
+    for (final collisionBlock in collisionBlocks) {
+      collisionBlock.position.x -= player.velocity.x * 0.3;
+    }
+
+    for (final itemBlock in itemBlocks) {
+      itemBlock.position.x -= player.velocity.x * 0.3;
+    }
+
     background.parallax?.baseVelocity = Vector2(bgSpeed, 0);
   }
 
   @override
-  void onGameResize(Vector2 size) {
+  bool onKeyEvent(RawKeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    final isUpKeyPressed = keysPressed.contains(LogicalKeyboardKey.keyW) ||
+        keysPressed.contains(LogicalKeyboardKey.arrowUp);
+    final isDownKeyPressed = keysPressed.contains(LogicalKeyboardKey.keyS) ||
+        keysPressed.contains(LogicalKeyboardKey.arrowDown);
+    final isSpaceKeyPressed = keysPressed.contains(LogicalKeyboardKey.space);
+
+    if (player.canRotate) {
+      if (isUpKeyPressed) {
+        player.direction = -1; // Set direction to -1 for 'W' key
+      } else if (isDownKeyPressed) {
+        player.direction = 1; // Set direction to 1 for 'S' key
+      } else if (isSpaceKeyPressed) {
+        player.shootTheVan(forceBar.force);
+        forceBar.disable();
+      } else {
+        player.direction = 0;
+      }
+    }
+    return super.onKeyEvent(event, keysPressed);
+  }
+
+  @override
+  void onGameResize(Vector2 size) async {
     tilesOffsetY = gameRef.size.y - levelTiles.size.y;
     levelTiles.position.y = tilesOffsetY;
     super.onGameResize(size);
   }
+
+  @override
+  void onCollisionStart(
+      Set<Vector2> intersectionPoints, PositionComponent other) {
+    print('Collision in level');
+    super.onCollisionStart(intersectionPoints, other);
+  }
+
+// --- PUBLIC
+
+  void reset() {
+    player.canRotate = true;
+    player.isFlying = false;
+    player.position = initPlayerPos;
+    player.velocity = Vector2.zero();
+    player.angle = 0;
+    player.distanceVan = 0;
+    player.distanceVanSum = 0;
+    levelTiles.position.x = 0;
+    background.parallax?.baseVelocity = Vector2.zero();
+    forceBar.enable();
+  }
+
+// --- HELPERS
 
   void _addBackground() async {
     background = await gameRef.loadParallaxComponent(
@@ -109,18 +178,6 @@ class Level extends World with HasGameRef<CaravanTossing> {
     add(player);
   }
 
-  void reset() {
-    player.canRotate = true;
-    player.isFlying = false;
-    player.position = initPlayerPos;
-    player.velocity = Vector2.zero();
-    player.angle = 0;
-    player.distanceVan = 0;
-    player.distanceVanSum = 0;
-    levelTiles.position.x = 0;
-    background.parallax?.baseVelocity = Vector2.zero();
-  }
-
   void _addCollisions() {
     final collisionLayer = levelTiles.tileMap.getLayer<ObjectGroup>('hitboxes');
     if (collisionLayer != null) {
@@ -132,6 +189,8 @@ class Level extends World with HasGameRef<CaravanTossing> {
               size: Vector2(collision.width, collision.height),
             );
             collisionBlocks.add(block);
+            debugMode = true;
+            block.priority = 11;
             add(block);
             break;
           case 'background':
@@ -140,11 +199,34 @@ class Level extends World with HasGameRef<CaravanTossing> {
               size: Vector2(collision.width, collision.height),
             );
             collisionBlocks.add(block);
+            debugMode = true;
+            block.priority = 11;
             add(block);
             break;
         }
       }
     }
     player.collisionBlocks = collisionBlocks;
+  }
+
+  void _addItems() {
+    final itemLayer = levelTiles.tileMap.getLayer<ObjectGroup>('hitboxes');
+    if (itemLayer != null) {
+      for (final item in itemLayer.objects) {
+        switch (item.class_) {
+          case 'explosives':
+            final itemBlock = SpriteComponent.fromImage(
+              game.images.fromCache('items/explosive_barrel01.png'),
+              size: Vector2(item.width, item.height),
+              position: Vector2(item.x, item.y + tilesOffsetY),
+              priority: 40,
+            );
+            itemBlocks.add(itemBlock);
+            add(itemBlock);
+            break;
+          default:
+        }
+      }
+    }
   }
 }
